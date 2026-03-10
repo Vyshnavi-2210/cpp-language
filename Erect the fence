@@ -1,0 +1,109 @@
+class Solution {
+public:
+/*
+https://youtu.be/et3dtYzVGQQ?si=qz2AeGaa8XTpBtEy
+
+the boundary which encloses all will be our path and all points lying on that boudary are our answers.
+this kind of path is called as convex hull (the path path made with minimum no.of points that still enclose all points.) => gives minimum cost for fencing.
+
+lets take 3 points 1.(x1, y1), 2.(x2, y2), 3.(x3, y3) form convex path on lower half of boundary 
+
+when m23 > m13 => m23-m13 > 0
+
+when (y3-y2)/(x3-x2) > (y2-y1)/(x2-x1)
+
+=>[ (y3-y2)(x2-x1) - (y2-y1)(x3-x2) ] > 0 (for lower part)
+=>[ (y3-y2)(x2-x1) - (y2-y1)(x3-x2) ] < 0 (for upper part)
+imagine a simple convex hull!, you can maek upper and lower in anyway possible.
+
+we use deque, one "lower" for lower half points, one "upper" for upper half points, as we add on the points to deque, whenever it's size is >= 2, while adding next point
+the above eqns should be valid for respective parts!, firts point deque[size-2], second deque[size-1], the point we are adding now is the third point, if the eqn is not valid then we pop the last point.
+
+We don't need to divide the points or anything, we just add points to respective container when the points satisfy the respective condition, and once done, we take set and all lower and upper points to get all unique points!!!.
+
+also we need to start from points on boundary, and sorting guarantees us to start from leftmost point.
+
+
+*/
+    int getEqnValue(pair<int, int> p1, pair<int, int> p2, pair<int, int> p3) {
+        int x1 = p1.first;
+        int x2 = p2.first;
+        int x3 = p3.first;
+
+        int y1 = p1.second;
+        int y2 = p2.second;
+        int y3 = p3.second;
+
+        return (y3-y2)*(x2-x1) - (y2-y1)*(x3-x2);
+    }
+
+    vector<vector<int>> outerTrees(vector<vector<int>>& trees) {
+        int n = trees.size();
+        sort(trees.begin(), trees.end());
+
+        deque<pair<int, int>> upper;
+        deque<pair<int, int>> lower;
+
+        for(auto& point : trees){
+            int lsize = lower.size();
+            int usize = upper.size();
+
+            while(lsize >= 2 && (getEqnValue(lower[lsize-2], lower[lsize-1], {point[0], point[1]}) < 0)){
+                lsize--;
+                lower.pop_back();
+            }
+            while(usize >= 2 && (getEqnValue(upper[usize-2], upper[usize-1], {point[0], point[1]}) > 0)){
+                usize--;
+                upper.pop_back();
+            }
+
+            lower.push_back({point[0], point[1]});
+            upper.push_back({point[0], point[1]});
+        }
+        set<pair<int, int>> pts;
+        for(auto& point : upper){
+            pts.insert(point);
+        }
+        for(auto& point : lower){
+            pts.insert(point);
+        }
+
+        vector<vector<int>> ans;
+        for(auto& pt : pts){
+            ans.push_back({pt.first, pt.second});
+        }
+        return ans;
+    }
+
+
+
+
+/*
+deque: 
+
+#include <iostream>
+#include <deque>
+
+int main() {
+    deque<int> dq;
+
+    dq.push_back(10);    // dq: [10]
+    dq.push_front(5);    // dq: [5, 10]
+    dq.push_back(20);    // dq: [5, 10, 20]
+
+    // Access elements
+    cout << "Front element: " << dq.front() << endl; // 5
+    cout << "Element at index 1: " << dq[1] << endl; // 10
+
+    dq.pop_front();      // dq: [10, 20]
+    dq.pop_back();       // dq: [10]
+
+    cout << "Size: " << dq.size() << endl; // 1
+
+    return 0;
+}
+
+
+*/
+
+};
